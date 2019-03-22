@@ -10,15 +10,15 @@ class TileGrid (val gc: GraphicsContext) {
     for (i <- 0 until map.length) {
       for (j <- 0 until map(i).length) {
         newMap(j)(i) match {
-          case 0 => new GrassTile(i * 64, j * 64).draw(gc)
-          case 1 => new DirtTile(i * 64, j * 64).draw(gc)
+          case 0 => new GrassTile(i * 64, j * 64, 64, 64)
+          case 1 => new DirtTile(i * 64, j * 64, 64, 64)
         }
       }
     }
   }
   
   def setTile(tile: Tile) = {
-    tile.draw(gc)
+    
     ???
   }
   

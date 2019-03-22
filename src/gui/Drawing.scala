@@ -1,6 +1,7 @@
 package gui
 
 import data._
+import helpers._
 import scala.collection.mutable.Buffer
 
 import scalafx.application.JFXApp
@@ -12,6 +13,8 @@ import scalafx.scene.canvas.Canvas
 import scalafx.Includes._
 import scalafx.scene.layout.Pane
 import scalafx.scene.control.ListView
+import scalafx.scene.canvas.GraphicsContext
+import helpers.Helpers
 
 object Drawing
   extends JFXApp {
@@ -25,6 +28,7 @@ object Drawing
 
   //GraphicsContext
   val gc = gameCanvas.graphicsContext2D
+  def getGc: GraphicsContext = gc
 
   //Set the stage
   stage = new JFXApp.PrimaryStage {
@@ -38,14 +42,11 @@ object Drawing
       }
     }
     //Create the map
-    val map = new TileGrid(gc)
-    
-    val listView = new ListView(List("moi", "joo", "jep"))
-    listView.layoutX = 100
-    listView.layoutY = 100
-    listView.prefHeight = 150
-    
-    
+    val map = new TileGrid(gc)  
+    val text = Helpers.loadText("src/res/DirtTile.png")
+    val text1 = Helpers.loadText("src/res/GrassTile.png")
+    Helpers.drawQuadText(text, 300, 300, 64, 64)
+    Helpers.drawQuadText(text1, 500, 500, 64, 64)
 
     //The actual map, 0 = Grass, 1 = Dirt
     val grid = Array(
@@ -66,7 +67,7 @@ object Drawing
       Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
       
     map.drawDesired(grid)
-    map.setTile(new DirtTile(0, 0))
+    //map.setTile(new DirtTile(0, 0))
     val enemy = new EasyEnemy(64, 64, 64, 64, 100, 100, gc)
     enemy.draw
     val enemy1 = new HardEnemy(5*64, 1*64, 100, 100, 100, 100, gc)
