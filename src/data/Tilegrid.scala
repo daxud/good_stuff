@@ -1,29 +1,45 @@
 package data
 
 import scalafx.scene.canvas.GraphicsContext
+import helpers._
+import scala.collection.mutable.Buffer
 
-class TileGrid (val gc: GraphicsContext) {
-  //two dim array of tiles
-  val map = Array.ofDim[Tile](20, 15)
+  //Takes as parameter a two-dim array that represents the map.
+class TileGrid(arr: Array[Array[Int]]) {
 
-  def drawDesired(newMap: Array[Array[Int]]) = {
-    for (i <- 0 until map.length) {
-      for (j <- 0 until map(i).length) {
-        newMap(j)(i) match {
-          case 0 => new GrassTile(i * 64, j * 64, 64, 64)
-          case 1 => new DirtTile(i * 64, j * 64, 64, 64)
+  //Map of tiles
+  val map: Array[Array[Tile]] = createMap
+  
+  //Checkpoints
+  val checkPoints: Buffer[Checkpoint] = Buffer()
+  
+  
+  //Fills the map with tiles.
+  def createMap: Array[Array[Tile]] = {
+    val a = Array.ofDim[Tile](arr.length, arr(0).length)
+    for (y <- 0 until arr.length) {
+      for(x <- 0 until arr(y).length) {
+        arr(y)(x) match {
+          case 0 => a(y)(x) = new Tile(x * 64, y * 64, Grass)
+          case 1 => a(y)(x) = new Tile(x * 64, y * 64, Dirt)
         }
       }
     }
+    a
   }
   
-  def setTile(tile: Tile) = {
-    
-    ???
+  def draw() = {
+    map.foreach(_.foreach( _.draw() ))
   }
   
-  def getTile(x: Int, y: Int): Tile = {
-    map(x)(y)
+  //Sets a certain tile.
+  def setTile(x: Int, y: Int, t: TileType): Unit = {
+    map(y)(x) = new Tile(x * 64, y * 64, t)
   }
-  
+
+  //Gets a certain tile.
+  def getTile(xPlace: Int, yPlace: Int): Tile = {
+    map(yPlace)(xPlace)
+  }
+
 }

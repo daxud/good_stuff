@@ -1,20 +1,17 @@
 package gui
 
-import data._
-import helpers._
-import scala.collection.mutable.Buffer
-
+import data.Easy
+import data.Enemy
+import data.Player
+import data.TileGrid
+import data.Wave
+import scalafx.animation.AnimationTimer
 import scalafx.application.JFXApp
 import scalafx.scene.Scene
-import scalafx.scene.control.Button
-import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
 import scalafx.scene.canvas.Canvas
-import scalafx.Includes._
-import scalafx.scene.layout.Pane
-import scalafx.scene.control.ListView
 import scalafx.scene.canvas.GraphicsContext
-import helpers.Helpers
+import scalafx.scene.layout.BorderPane
+import scalafx.Includes._
 
 object Drawing
   extends JFXApp {
@@ -25,6 +22,7 @@ object Drawing
 
   //Create canvas
   val gameCanvas = new Canvas(canvasWidth, canvasHeight)
+  def getCanvas = gameCanvas
 
   //GraphicsContext
   val gc = gameCanvas.graphicsContext2D
@@ -33,45 +31,64 @@ object Drawing
   //Set the stage
   stage = new JFXApp.PrimaryStage {
     title = "TowerDefenseGame"
-    height = canvasHeight
-    width = canvasWidth
-    scene = new Scene {
-      root = new Pane {
-        //this.addEventHandler(eventType, eventHandler)
-        children = gameCanvas
-      }
+    height = canvasHeight + 50
+    width = canvasWidth + 50
+    scene = new Scene(1280, 960) {
+      val border = new BorderPane
+      border.center = gameCanvas
+      root = border
     }
-    //Create the map
-    val map = new TileGrid(gc)  
-    val text = Helpers.loadText("src/res/DirtTile.png")
-    val text1 = Helpers.loadText("src/res/GrassTile.png")
-    Helpers.drawQuadText(text, 300, 300, 64, 64)
-    Helpers.drawQuadText(text1, 500, 500, 64, 64)
-
-    //The actual map, 0 = Grass, 1 = Dirt
-    val grid = Array(
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1),
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-      
-    map.drawDesired(grid)
-    //map.setTile(new DirtTile(0, 0))
-    val enemy = new EasyEnemy(64, 64, 64, 64, 100, 100, gc)
-    enemy.draw
-    val enemy1 = new HardEnemy(5*64, 1*64, 100, 100, 100, 100, gc)
-    enemy1.draw
-
   }
+
+  //The Map-Array which we use to create the map, size: 20x15.
+  val arr = Array(
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
+  //Map of the game.
+  val gameMap = new TileGrid(arr)
+  def getMap: TileGrid = gameMap
+  gameMap.draw()
+
+  //Player of the game.
+  val p1 = new Player(gameMap)
+
+  //Enemies of the game.
+  val e1 = new Enemy(Easy, gameMap)
+  val w1 = new Wave(3, Easy, gameMap)
+
+  //Mouse events.
+  gameCanvas.onMouseDragged = { me =>
+    p1.setTile(me)
+  }
+
+  //Animation timer and the time of the game.
+  var lastTime = 0L
+
+  val timer = AnimationTimer { t =>
+    if (lastTime != 0) {
+      val delta = (t - lastTime) / 1e9 //In seconds.
+      gameMap.draw()
+      w1.update(delta)
+    }
+    lastTime = t
+  }
+
+  //Lets start the timer.
+  timer.start()
 }
+  
+ 
