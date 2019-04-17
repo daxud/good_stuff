@@ -10,12 +10,12 @@ trait EnemyType {
   def health: Int
   def width: Int = 64
   def height: Int = 64
-  def startTile: Tile = Drawing.getMap.getTile(2, 1)
+  def startTile: Tile = Drawing.getMap.getTile(1, 1)
 }
 
 object Easy extends EnemyType {
   val t = Helpers.loadText("src/res/Sonni.png")
   def text = t
-  def speed: Int = 120
+  def speed: Int = 160
   def health: Int = 100
 }

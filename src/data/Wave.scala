@@ -5,10 +5,11 @@ import scala.collection.mutable.Buffer
 class Wave(spawnTime: Double, enemyType: EnemyType, grid: TileGrid)  {
   
   var timeSinceLastSpawn: Double = 0
-  val enemyList = Buffer[Enemy]()
+  var enemyList = Buffer[Enemy]()
   
   def update(delta: Double): Unit = {
-    timeSinceLastSpawn += delta 
+    timeSinceLastSpawn += delta
+    enemyList = enemyList.filter(_.alive)
     if (timeSinceLastSpawn > spawnTime) {
       this.spawn()
       timeSinceLastSpawn = 0
