@@ -9,10 +9,10 @@ class TowerCannon(tile: Tile, height: Int, width: Int, dmg: Int) {
   val x = tile.x.toDouble
   val y = tile.y.toDouble
   var timeSinceLastShot: Double = 0
-  var firingSpeed: Double = 1
+  var firingSpeed: Double = 3
   
   //List of all the projectiles of THIS cannon.
-  val projectiles = Buffer[Projectile]()
+  var projectiles = Buffer[Projectile]()
   def getProjectiles: Buffer[Projectile] = projectiles
   this.shoot() //Shoot one bullet right away.
 
@@ -23,8 +23,8 @@ class TowerCannon(tile: Tile, height: Int, width: Int, dmg: Int) {
   
   def shoot() = {
     timeSinceLastShot = 0
-    for (a <- (0 until 360 by 45).toVector) {
-      projectiles += new Projectile(x + 32, y + 32, 1, 10, 10, a)
+    for (a <- (0 until 360 by 10).toVector) {
+      projectiles += new Projectile(x + 32, y + 32, 3, 80, 10, a)
     }
   }
   
@@ -33,7 +33,9 @@ class TowerCannon(tile: Tile, height: Int, width: Int, dmg: Int) {
     if (timeSinceLastShot > firingSpeed) {
       shoot()
     }
-    projectiles.filter(p => math.hypot(math.abs(x - p.x), math.abs(y - p.y)) < 300).foreach { p =>
+    //If the bullets get too far they disappear.
+    projectiles = projectiles.filter(p => math.hypot(math.abs(x - p.x), math.abs(y - p.y)) < 200)
+    projectiles.foreach { p =>
       p.update(delta)
       p.draw() 
     }

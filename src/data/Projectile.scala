@@ -9,7 +9,7 @@ class Projectile(var x: Double, var y: Double, val speed: Double, val dmg: Doubl
   def draw(): Unit = {
     Helpers.drawCircle(x, y, r, Color.Black)
   }
-
+  
   //Depending on the angle update the projectile.
   def update(delta: Double): Unit = {
     if (a >= 0 && a <= 90) {
