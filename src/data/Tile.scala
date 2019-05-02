@@ -14,7 +14,7 @@ class Tile(val x: Int, val y: Int, val tiletype: TileType) {
   
   def text: Image = tiletype.text
   
-  def draw(): Unit = Helpers.drawQuadText(this.text, x.toDouble, y.toDouble, tiletype.width, tiletype.height)
+  def draw(): Unit = Helpers.drawQuadTextRot(this.text, x.toDouble, y.toDouble, tiletype.width, tiletype.height, 0.0)
   
   //X and Y places in the tilegrid as integers.
   def xPlace = x / 64

@@ -3,6 +3,8 @@ package data
 import data._
 import helpers._
 import scalafx.scene.image.Image
+import scalafx.scene.paint.Color
+import scalafx.scene.shape.Rectangle
 
 trait TileType {
   
@@ -20,6 +22,13 @@ trait TileType {
   }
   
   object Dirt extends TileType {
+    def buildable = false
+    val t = Helpers.loadText("src/res/DirtTile.png")
+    def text = t
+  }
+  
+  //This is just a placeholder tile for the auto-move AI. This tiletype never exists in our game!
+  object Null extends TileType {
     def buildable = false
     val t = Helpers.loadText("src/res/DirtTile.png")
     def text = t

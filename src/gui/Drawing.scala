@@ -12,6 +12,8 @@ import scalafx.scene.canvas.Canvas
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.layout.BorderPane
 import scalafx.Includes._
+import data.TowerCannon
+import data.Game
 
 object Drawing
   extends JFXApp {
@@ -41,38 +43,30 @@ object Drawing
   }
 
   //The Map-Array which we use to create the map, size: 20x15.
-  val arr = Array(
+  val map = Array(
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-    Array(0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-    Array(0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    Array(0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0),
-    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
-    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1),
+    Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1),
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1),
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
-  //Map of the game.
-  val gameMap = new TileGrid(arr)
-  def getMap: TileGrid = gameMap
-  gameMap.draw()
-
-  //Player of the game.
-  val p1 = new Player(gameMap)
-
-  //Enemies of the game.
-  val e1 = new Enemy(Easy, gameMap)
-  val w1 = new Wave(3, Easy, gameMap)
+  //Lets start a new game.
+  val game = new Game(map)
+  def getGame: Game = game
 
   //Mouse events.
   gameCanvas.onMouseDragged = { me =>
-    p1.setTile(me)
+    //p1.setTile(me)
   }
 
   //Animation timer and the time of the game.
@@ -81,8 +75,7 @@ object Drawing
   val timer = AnimationTimer { t =>
     if (lastTime != 0) {
       val delta = (t - lastTime) / 1e9 //In seconds.
-      gameMap.draw()
-      w1.update(delta)
+      game.update(delta)
     }
     lastTime = t
   }

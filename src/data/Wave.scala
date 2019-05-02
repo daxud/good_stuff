@@ -2,26 +2,31 @@ package data
 
 import scala.collection.mutable.Buffer
 
-class Wave(spawnTime: Double, enemyType: EnemyType, grid: TileGrid)  {
-  
+class Wave(enemyType: EnemyType, spawnTime: Double, enemiesPerWave: Int, grid: TileGrid) {
+
   var timeSinceLastSpawn: Double = 0
   var enemyList = Buffer[Enemy]()
-  
+  this.spawn()
+  var waveCompleted = false
+
+  def isCompleted: Boolean = waveCompleted
+
   def update(delta: Double): Unit = {
-    timeSinceLastSpawn += delta
-    enemyList = enemyList.filter(_.alive)
-    if (timeSinceLastSpawn > spawnTime) {
-      this.spawn()
-      timeSinceLastSpawn = 0
+    if (enemyList.size < enemiesPerWave) {
+      timeSinceLastSpawn += delta
+      if (timeSinceLastSpawn > spawnTime) {
+        this.spawn()
+        timeSinceLastSpawn = 0
+      }
     }
-    for (e <- enemyList) {
-      e.update(delta)
-      e.draw()
+    enemyList.filter(_.alive).foreach { e =>
+      e.update(delta); e.draw()
     }
+    if (enemyList.forall(!_.alive)) waveCompleted = true
   }
-  
+
   def spawn(): Unit = {
-    enemyList += new Enemy(Easy, grid)
+    enemyList += new Enemy(enemyType, grid)
   }
-  
+
 }

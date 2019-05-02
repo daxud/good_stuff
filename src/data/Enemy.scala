@@ -5,8 +5,9 @@ import gui.Drawing
 import scala.collection.mutable.Buffer
 
 class Enemy(enemytype: EnemyType, grid: TileGrid) {
-  var x = enemytype.startTile.x.toDouble
-  var y = enemytype.startTile.y.toDouble
+  val startTile = grid.getTile(1,1)
+  var x = startTile.x.toDouble
+  var y = startTile.y.toDouble
   var health: Int = enemytype.health
   val speed: Int = enemytype.speed
 
@@ -14,41 +15,38 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
   var dirMultp = (0, 0)
   var currentCheckpoint: Int = 0
   val checkpoints = Buffer[Checkpoint]()
+  //Lets populate the array of checkpoints before we get any further.
   this.populateCheckpointList()
 
   //The tile that the enemy is currently standing.
   def currentTile: Tile = grid.getTile((x / 64).toInt, (y / 64).toInt)
 
-  //The enemy is alive if has some health and if its inside the map parameters.
+  //The enemy is alive if has some health and if its inside the map parameters.(currentTile != Null tile)
   def alive: Boolean = {
-    val c = this.currentTile
-    c.xPlace < 19 && c.xPlace > 0 && c.yPlace < 15 && c.yPlace > 0 && health > 0
+    this.currentTile.tiletype != Null && health > 0
   }
 
   //Draws the enemy to the screen.
-  def draw(): Unit = Helpers.drawQuadText(enemytype.text, x, y, enemytype.width, enemytype.height)
+  def draw(): Unit = Helpers.drawQuadTextRot(enemytype.text, x, y, enemytype.width, enemytype.height, 90.0)
 
   //Finds the next direction.
   def findNextDir(t: Tile) = {
     //All the surrounding tiles.
-    if (t.xPlace > 0 && t.yPlace > 0 && t.xPlace < 18 && t.yPlace < 13) {
-      val u = grid.getTile(t.xPlace, t.yPlace - 1)
-      val d = grid.getTile(t.xPlace, t.yPlace + 1)
-      val r = grid.getTile(t.xPlace + 1, t.yPlace)
-      val l = grid.getTile(t.xPlace - 1, t.yPlace)
+    val u = grid.getTile(t.xPlace, t.yPlace - 1)
+    val d = grid.getTile(t.xPlace, t.yPlace + 1)
+    val r = grid.getTile(t.xPlace + 1, t.yPlace)
+    val l = grid.getTile(t.xPlace - 1, t.yPlace)
 
-      //Enemy cant turn 180 degrees around so current value of dirMultp cant be opposite.
-      if (u.tiletype == t.tiletype && dirMultp != (0, 1)) {
-        dirMultp = (0, -1)
-      } else if (d.tiletype == t.tiletype && dirMultp != (0, -1)) {
-        dirMultp = (0, 1)
-      } else if (r.tiletype == t.tiletype && dirMultp != (-1, 0)) {
-        dirMultp = (1, 0)
-      } else if (l.tiletype == t.tiletype && dirMultp != (1, 0)) {
-        dirMultp = (-1, 0)
-      }
-    } else {
-      dirMultp = (1, 1)
+    //Enemy cant turn 180 degrees around so current value of dirMultp cant be opposite.
+    if (u.tiletype == t.tiletype && dirMultp != (0, 1)) {
+      dirMultp = (0, -1)
+    } else if (d.tiletype == t.tiletype && dirMultp != (0, -1)) {
+      dirMultp = (0, 1)
+    } else if (r.tiletype == t.tiletype && dirMultp != (-1, 0)) {
+      dirMultp = (1, 0)
+    } else if (l.tiletype == t.tiletype && dirMultp != (1, 0)) {
+      dirMultp = (-1, 0)
+
     }
   }
 
@@ -61,13 +59,17 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
     var found: Boolean = false
     var stepper = 1
 
+    def forwardTile: Tile = grid.getTile(t.xPlace + (dirMultp._1 * stepper), t.yPlace + (dirMultp._2 * stepper))
+
     while (!found) {
-      //Scan the road forward until we find the end of the road(first condition), or until we find a different type of tile(second condition).
-      if (t.xPlace + dirMultp._1 * stepper == 20 || t.tiletype !=
-        grid.getTile(t.xPlace + (dirMultp._1 * stepper), t.yPlace + (dirMultp._2 * stepper)).tiletype) {
+      //Scans the road forward until finds a the end of the map (tiletype=Null) or a different tiletype.
+      if (forwardTile.tiletype == Null) {
+        found = true
+        nextT = forwardTile
+      } else if (forwardTile.tiletype != t.tiletype) {
         found = true
         stepper -= 1
-        nextT = grid.getTile(t.xPlace + (dirMultp._1 * stepper), t.yPlace + (dirMultp._2 * stepper))
+        nextT = forwardTile
       }
       stepper += 1
     }
@@ -78,8 +80,8 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
   //Fills the checkpoints list with all the maps checkpoints(corners).
   def populateCheckpointList(): Unit = {
     //Lets set the first checkpoint dependant on the startTile to the checkpoints array.
-    this.findNextDir(enemytype.startTile)
-    checkpoints += this.findNextC(enemytype.startTile)
+    this.findNextDir(startTile)
+    checkpoints += this.findNextC(startTile)
 
     var stepper = 0
     var continue = true
@@ -87,7 +89,8 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
     //And the rest with a while loop.
     while (continue) {
       this.findNextDir(checkpoints(stepper).getTile)
-      if (dirMultp._1 == 1 && dirMultp._2 == 1) {
+
+      if (checkpoints.last.getTile.tiletype == Null) {
         continue = false
       } else {
         checkpoints += this.findNextC(checkpoints(stepper).getTile)
@@ -96,14 +99,13 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
     }
   }
 
-  //Checks whether the current checkpoint, ahead of us, is reached.
-  def checkpointReached = {
+  //Checks whether the current checkpoint, ahead of us, is reached. If currentCheckpoint is type of Null enemy dies.
+  def checkpointReached: Boolean = {
     var reached = false
 
     val current = checkpoints(currentCheckpoint).getTile
 
-    if (x > current.x - 3 && x < current.x + 3 &&
-      y > current.y - 3 && y < current.y + 3) {
+    if (x > current.x - 3 && x < current.x + 3 && y > current.y - 3 && y < current.y + 3) {
       reached = true
       x = current.x
       y = current.y
