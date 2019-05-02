@@ -1,6 +1,7 @@
 package data
+import scala.collection.mutable.Buffer
 
-class WaveManager(enemyType: EnemyType, timeBetweenEnemies: Double, enemiesPerWave: Int, grid: TileGrid) {
+class WaveManager(enemyType: EnemyType, timeBetweenEnemies: Double, enemiesPerWave: Int, grid: TileGrid, p: Buffer[Projectile]) {
   var timeSinceLastWave = 0
   var waveNumber = 0
   var currentWave: Wave = null
@@ -8,7 +9,7 @@ class WaveManager(enemyType: EnemyType, timeBetweenEnemies: Double, enemiesPerWa
 
   def update(delta: Double)() = {
     if (!currentWave.isCompleted) {
-      currentWave.update(delta)
+      currentWave.update(delta, p)
     } else {
       this.newWave()
     }

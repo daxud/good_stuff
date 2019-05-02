@@ -13,6 +13,7 @@ class TowerCannon(tile: Tile, height: Int, width: Int, dmg: Int) {
   
   //List of all the projectiles of THIS cannon.
   val projectiles = Buffer[Projectile]()
+  def getProjectiles: Buffer[Projectile] = projectiles
   this.shoot() //Shoot one bullet right away.
 
   def draw(): Unit = {
@@ -22,7 +23,9 @@ class TowerCannon(tile: Tile, height: Int, width: Int, dmg: Int) {
   
   def shoot() = {
     timeSinceLastShot = 0
-    projectiles += new Projectile(x + 32, y + 32, 80, 10, 10)
+    for (a <- (0 until 360 by 45).toVector) {
+      projectiles += new Projectile(x + 32, y + 32, 1, 10, 10, a)
+    }
   }
   
   def update(delta: Double): Unit = {
@@ -30,7 +33,7 @@ class TowerCannon(tile: Tile, height: Int, width: Int, dmg: Int) {
     if (timeSinceLastShot > firingSpeed) {
       shoot()
     }
-    projectiles.foreach { p =>
+    projectiles.filter(p => math.hypot(math.abs(x - p.x), math.abs(y - p.y)) < 300).foreach { p =>
       p.update(delta)
       p.draw() 
     }
