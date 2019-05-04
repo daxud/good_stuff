@@ -14,6 +14,7 @@ import scalafx.scene.layout.BorderPane
 import scalafx.Includes._
 import data.TowerCannon
 import data.Game
+import scalafx.scene.input.KeyCode
 
 object Drawing
   extends JFXApp {
@@ -67,6 +68,13 @@ object Drawing
   //Mouse events.
   gameCanvas.onMouseDragged = { me =>
     //p1.setTile(me)
+  }
+  
+  //Key events.
+  gameCanvas.onKeyPressed = { ke =>
+    ke.code match {
+      case KeyCode.Q => game.player
+    }
   }
 
   //Animation timer and the time of the game.

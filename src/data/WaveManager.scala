@@ -19,5 +19,4 @@ class WaveManager(enemyType: EnemyType, timeBetweenEnemies: Double, enemiesPerWa
     currentWave = new Wave(enemyType, timeBetweenEnemies, enemiesPerWave, grid)
     waveNumber += 1
   }
-
 }

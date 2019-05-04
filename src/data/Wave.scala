@@ -13,7 +13,7 @@ class Wave(enemyType: EnemyType, spawnTime: Double, enemiesPerWave: Int, grid: T
 
   def update(delta: Double, a: Buffer[Projectile]): Unit = {
     val projLocations = a.map(p => grid.getTile(p.x.toInt / 64, p.y.toInt / 64))
-    enemyList.map(e => if (projLocations.contains(e.currentTile)) e.health = 0)
+    enemyList.map(e => if (projLocations.contains(e.currentTile)) e.health = 10)
     if (enemyList.size < enemiesPerWave) {
       timeSinceLastSpawn += delta
       if (timeSinceLastSpawn > spawnTime) {
