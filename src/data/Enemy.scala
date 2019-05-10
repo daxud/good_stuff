@@ -10,6 +10,7 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
   var y = startTile.y.toDouble
   var health: Int = enemytype.health
   val speed: Int = enemytype.speed
+  var outOfBounds: Boolean = false
 
   //Variables that have somethin to do with the moving of the enemy.
   var dirMultp = (0, 0)
@@ -23,11 +24,15 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
 
   //The enemy is alive if has some health and if its inside the map parameters.(currentTile != Null tile)
   def alive: Boolean = {
+    if (this.currentTile.tiletype == Null) outOfBounds = true
     this.currentTile.tiletype != Null && health > 0
   }
 
-  //Draws the enemy to the screen.
-  def draw(): Unit = Helpers.drawQuadTextRot(enemytype.text, x, y, enemytype.width, enemytype.height, 90.0)
+  //Draws the enemy and the enemys HP bar.
+  def draw(): Unit = {
+    Helpers.drawQuadText(enemytype.text, x, y, enemytype.width, enemytype.height)
+    Helpers.drawHealthBar(x, y, 100, health)
+  }
 
   //Finds the next direction.
   def findNextDir(t: Tile) = {
@@ -59,7 +64,7 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
     var found: Boolean = false
     var stepper = 1
 
-    def forwardTile: Tile = grid.getTile(t.xPlace + (dirMultp._1 * stepper), t.yPlace + (dirMultp._2 * stepper))
+    def forwardTile: Tile = grid.getTile(math.ceil(t.xPlace + (dirMultp._1 * stepper)).toInt, math.ceil(t.yPlace + (dirMultp._2 * stepper)).toInt)
 
     while (!found) {
       //Scans the road forward until finds a the end of the map (tiletype=Null) or a different tiletype.
@@ -105,12 +110,16 @@ class Enemy(enemytype: EnemyType, grid: TileGrid) {
 
     val current = checkpoints(currentCheckpoint).getTile
 
-    if (x > current.x - 3 && x < current.x + 3 && y > current.y - 3 && y < current.y + 3) {
+    if (x > current.x - 10 && x < current.x + 10 && y > current.y - 10 && y < current.y + 10) {
       reached = true
       x = current.x
       y = current.y
     }
     reached
+  }
+  
+  def doDmg(amount: Int) = {
+    this.health = this.health - amount
   }
 
   //Updates enemy state.

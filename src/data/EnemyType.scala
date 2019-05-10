@@ -15,6 +15,6 @@ trait EnemyType {
 object Easy extends EnemyType {
   val t = Helpers.loadText("src/res/Sonni.png")
   def text = t
-  def speed: Int = 160
+  def speed: Int = 120
   def health: Int = 100
 }

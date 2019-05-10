@@ -3,17 +3,21 @@ package data
 class Game(map: Array[Array[Int]]) {
 
   val grid = new TileGrid(map)
-  val tower = new TowerCannon(grid.getTile(3,8), 64, 64, 10)
-  val waveManager = new WaveManager(Easy, 3, 3, grid, tower.getProjectiles)
-  val player = new Player(grid, waveManager) 
-      )
+  val waveManager = new WaveManager(Easy, 1, 10, grid)
+  val player = new Player(grid, waveManager)
+  var alive: Boolean = true
 
-  
   //Updates the game state, that is, calls the update for all the updatable classes.
+
   def update(delta: Double) = {
-    
-    grid.draw()
-    waveManager.update(delta)
-    tower.update(delta)
+    //Current wave from 0 to X
+    if (alive) {
+      val currentWave: Int = waveManager.waveNumber
+      grid.draw()
+      waveManager.update(delta)
+      player.update(delta)
+      if (waveManager.waveNumber != currentWave) player.money += 500
+      if (player.health <= 0) alive = false
+    }
   }
 }

@@ -7,24 +7,37 @@ class Wave(enemyType: EnemyType, spawnTime: Double, enemiesPerWave: Int, grid: T
   var timeSinceLastSpawn: Double = 0
   var enemyList = Buffer[Enemy]()
   this.spawn()
+  var numberOfCurrentEnemy: Int = 1
   var waveCompleted = false
+  var enemiesPassed = 0
 
   def isCompleted: Boolean = waveCompleted
+  
+  def checkPassed() = {
+    enemyList.foreach(e => if (!e.alive && e.outOfBounds) enemiesPassed += 1)
+  }
 
-  def update(delta: Double, a: Buffer[Projectile]): Unit = {
-    val projLocations = a.map(p => grid.getTile(p.x.toInt / 64, p.y.toInt / 64))
-    enemyList.map(e => if (projLocations.contains(e.currentTile)) e.health = 10)
+  def update(delta: Double): Unit = {
+    this.checkPassed()
     if (enemyList.size < enemiesPerWave) {
       timeSinceLastSpawn += delta
-      if (timeSinceLastSpawn > spawnTime) {
+
+      if (timeSinceLastSpawn > spawnTime && numberOfCurrentEnemy < enemiesPerWave) {
         this.spawn()
+        numberOfCurrentEnemy += 1
         timeSinceLastSpawn = 0
       }
     }
-    enemyList.filter(_.alive).foreach { e =>
-      e.update(delta); e.draw()
+    enemyList = enemyList.filter(_.alive) //Lets filter away the dead ones.
+    enemyList.foreach(e => {
+      e.update(delta)
+      e.draw()
     }
-    if (enemyList.forall(!_.alive)) waveCompleted = true
+    )
+    //If all the enemies of the wave has been spawned and the enemylist is empty(all dead)
+    //the wave is then completed.
+    if (numberOfCurrentEnemy == enemiesPerWave && enemyList.isEmpty) waveCompleted = true;
+    enemyList.foreach(e => println(e.health))    
   }
 
   def spawn(): Unit = {

@@ -4,28 +4,52 @@ import scalafx.scene.image.Image
 import helpers.Helpers
 import scalafx.scene.paint.Color
 
-class Projectile(var x: Double, var y: Double, val speed: Double, val dmg: Double, r: Int, a: Int) {
+class Projectile(var x: Double, var y: Double, val speed: Double, val dmg: Int, t: Enemy) {
+
+  //Diameter of the bullet.
+  val d: Int = 10
+
+  //Velocities
+  var xVelocity = 0.0
+  var yVelocity = 0.0
+
+  //Target of the bullet.
+  val target: Enemy = t
+
+  //Is the projectile alive
+  var alive: Boolean = true
+
+  def calculateDirection() = {
+    val totalAllowedMovement = 1.0
+    var xDistanceFromTarget = Math.abs(target.x - x + 32)
+    var yDistanceFromTarget = Math.abs(target.y - y + 32)
+    var totalDistanceFromTarget = xDistanceFromTarget + yDistanceFromTarget
+    var xPercentOfMovement = xDistanceFromTarget / totalDistanceFromTarget
+    xVelocity = xPercentOfMovement
+    yVelocity = totalAllowedMovement - xPercentOfMovement
+
+    if (target.x < x) xVelocity = xVelocity * -1
+    if (target.y < y) yVelocity = yVelocity * -1
+  }
+
+  this.calculateDirection()
 
   def draw(): Unit = {
-    Helpers.drawCircle(x, y, r, Color.Black)
-  }
-  
-  //Depending on the angle update the projectile.
-  def update(delta: Double): Unit = {
-    if (a >= 0 && a <= 90) {
-      x += delta * speed * a
-      y -= delta * speed * (90 - a)
-    } else if (a >= 90 && a <= 180) {
-      x += delta * speed * (180 - a)
-      y -= delta * speed * (90 - a)
-    } else if (a >= 180 && a <= 270) {
-      x += delta * speed * (180 - a)
-      y += delta * speed * (270 - a)
-    } else if (a >= 270 && a <= 360) {
-      x -= delta * speed * (360 - a)
-      y += delta * speed * (270 - a)
+    if (alive) {
+      Helpers.drawCircle(x, y, d, Color.Black)
     }
-    this.draw()
   }
 
+  def update(delta: Double): Unit = {
+    if (alive) {
+      y += yVelocity * speed * delta
+      x += xVelocity * speed * delta
+      //Lets check here is the bullet is hitting the target. If it is the bullet "dies" and dmgs the enemy.
+      if (Helpers.isColliding(x, y, d, d, target.x, target.y, 64, 64) && this.alive) {
+        alive = false
+        target.doDmg(dmg)
+      }
+      this.draw()
+    }
+  }
 }
